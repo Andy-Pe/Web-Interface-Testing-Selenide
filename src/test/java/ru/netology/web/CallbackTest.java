@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 
 import static com.codeborne.selenide.Condition.appear;
 import static com.codeborne.selenide.Selenide.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 class CallbackTest {
@@ -68,9 +69,11 @@ class CallbackTest {
     void shouldTestIfPhoneNumberBeginWithEight() {
         $("[data-test-id=city] input").setValue("Москва");
         $("[data-test-id=name] input").setValue("Иванов Иван");
-        $("[data-test-id=phone] input").setValue("+89251112233"); // код +8 принадлежит восточной Азии и специальным службам, тест должен падать, но проходит
+        $("[data-test-id=phone] input").setValue("+89251112233"); // код +8 принадлежит восточной Азии и специальным службам
         $("[data-test-id=agreement] span").click();
         $x("//*[@class='button__content']").click();
+        String text = $("[data-test-id=phone].input_invalid .input__sub").getText();
+        assertEquals("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.", text.trim());
     }
 }
 
