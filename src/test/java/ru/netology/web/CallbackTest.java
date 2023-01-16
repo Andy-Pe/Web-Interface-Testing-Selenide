@@ -1,36 +1,42 @@
 package ru.netology.web;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.SelenideElement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.text.SimpleDateFormat;
+import org.openqa.selenium.Keys;
 import java.time.Duration;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import static com.codeborne.selenide.Condition.appear;
-import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Selenide.*;
 
 
 class CallbackTest {
+    String planningDate = generateDate(3);
+
+    public String generateDate(int days) {
+        return LocalDate.now().plusDays(days).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+    }
+
     @BeforeEach
     void setup() {
         Configuration.holdBrowserOpen = true;
-        Calendar c = new GregorianCalendar();
-        c.add(Calendar.DAY_OF_YEAR, 3); // увеличиваем на 3 дня от текущей даты
-        SimpleDateFormat format1 = new SimpleDateFormat("dd.MM.yyyy"); //придаем нужный формат дате
-        String str = format1.format(c.getTime());//c.getTime().toString();//вытягиваем измененную дату в нужном формате и присваиваем переменной
         open("http://localhost:9999");
-        $("[data-test-id=date] input").sendKeys(str);
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[data-test-id=date] input").setValue(planningDate);
     }
+
     @AfterEach
     void end() {
-        $("[data-test-id=notification]").should(appear, Duration.ofMillis(15000));
+        $("[data-test-id=notification]").should(appear, Duration.ofSeconds(15));
+        $(".notification__content")
+                .shouldHave(Condition.text("Встреча успешно забронирована на " + planningDate), Duration.ofSeconds(15))
+                .shouldBe(Condition.visible);
     }
+
     @Test
     void shouldTestSuccessfulFormSubmission() {
         $("[data-test-id=city] input").setValue("Москва");
@@ -39,6 +45,7 @@ class CallbackTest {
         $("[data-test-id=agreement] span").click();
         $x("//*[@class='button__content']").click();
     }
+
     @Test
     void shouldTestIfDoubleNameAndSurname() {
         $("[data-test-id=city] input").setValue("Москва");
@@ -47,6 +54,7 @@ class CallbackTest {
         $("[data-test-id=agreement] span").click();
         $x("//*[@class='button__content']").click();
     }
+
     @Test
     void shouldTestIfShortNameAndSurname() {
         $("[data-test-id=city] input").setValue("Москва");
@@ -55,6 +63,7 @@ class CallbackTest {
         $("[data-test-id=agreement] span").click();
         $x("//*[@class='button__content']").click();
     }
+
     @Test
     void shouldTestIfPhoneNumberBeginWithEight() {
         $("[data-test-id=city] input").setValue("Москва");
